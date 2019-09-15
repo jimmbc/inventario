@@ -1,15 +1,17 @@
 package stock;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 class OrderController {
 
-    private final OrderRepository orderRepository;
+    private final productorepositorio orderRepository;
     private final Ordenasembler assembler;
 
-    OrderController(OrderRepository orderRepository,
-                    OrderResourceAssembler assembler) {
+    OrderController(productorepositorio orderRepository,
+                    Ordenasembler assembler) {
 
         this.orderRepository = orderRepository;
         this.assembler = assembler;
@@ -17,7 +19,7 @@ class OrderController {
     @DeleteMapping("/orders/{id}/cancel")
     ResponseEntity<ResourceSupport> cancel(@PathVariable Long id) {
 
-        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+        Order order = orderRepository.findById(id).orElseThrow(() -> new productoNotFoundException(id));
 
         if (order.getStatus() == Status.IN_PROGRESS) {
             order.setStatus(Status.CANCELLED);

@@ -1,7 +1,7 @@
 package stock;
 
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Resource;
+import org.springframework.core.io.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
 
