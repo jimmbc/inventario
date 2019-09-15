@@ -1,3 +1,4 @@
+
 package stock;
 
 import java.util.List;
@@ -25,6 +26,17 @@ class productocontrolador {
     @GetMapping("/producto")
     List<producto> all() {
         return repository.findAll();
+    }
+
+    @GetMapping("/producto/{id}")
+    ResponseEntity<EntityModel<producto>> findOne(@PathVariable long id) {
+
+        return repository.findById(id)
+                .map(employee -> new EntityModel<>(employee,
+                        linkTo(methodOn(productocontrolador.class).findOne(employee.getId())).withSelfRel(),
+                        linkTo(methodOn(productocontrolador.class).findAll()).withRel("employees")))
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/producto")
@@ -57,7 +69,7 @@ class productocontrolador {
     }
 
     @DeleteMapping("/producto/{id}")
-    void eliminarproducto(@PathVariable Long id) {
+    void deleteproducto(@PathVariable Long id) {
         repository.deleteById(id);
     }
 }
