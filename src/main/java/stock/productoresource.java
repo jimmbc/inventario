@@ -1,17 +1,19 @@
 package stock;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
 
-public class productoResource extends ResourceSupport {
+@Component
+class productorwsource implements ResourceAssembler<producto, Resource<producto>> {
 
-    private final producto producto;
+    @Override
+    public Resource<producto> toResource(producto producto) {
 
-    public PersonResource(final Person person) {
-        this.person = person;
-        final long id = person.getId();
-        add(linkTo(PersonController.class).withRel("people"));
-        add(linkTo(methodOn(GymMembershipController.class).all(id)).withRel("memberships"));
-        add(linkTo(methodOn(PersonController.class).get(id)).withSelfRel());
+        return new Resource<>(producto,
+                linkTo(methodOn(productoController.class).one(producto.getId())).withSelfRel(),
+                linkTo(methodOn(productoController.class).all()).withRel("productos"));
     }
 }

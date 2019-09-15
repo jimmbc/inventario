@@ -1,18 +1,10 @@
 
 package stock;
 
-import java.util.List;
+import com.sun.javaws.security.Resource;
+import org.springframework.web.bind.annotation.*;
 
-import javassist.NotFoundException;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 
 @RestController
@@ -26,30 +18,43 @@ class productocontrolador {
 
     // Aggregate root
 
-    @GetMapping
-    public List<producto> findAll() {
-        return repository.findAll();
+    @GetMapping("/producto/{id}")
+    Resource<producto> one(@PathVariable Long id) {
+
+        producto producto = repository.findById(id)
+                .orElseThrow(() -> new productoNotFoundException(id));
+
+        return new Resource<>(producto,
+                linkTo(methodOn(productoController.class).one(id)).withSelfRel(),
+                linkTo(methodOn(productoController.class).all()).withRel("producto"));
+    }
+    @GetMapping("/producto")
+    Resources<Resource<producto>> all() {
+
+        List<Resource<producto>> producto = repository.findAll().stream()
+                .map(producto -> new Resource<>(producto,
+                        linkTo(methodOn(productoController.class).one(producto.getId())).withSelfRel(),
+                        linkTo(methodOn(productoController.class).all()).withRel("producto")))
+                .collect(Collectors.toList());
+
+        return new Resources<>(producto,
+                linkTo(methodOn(productoController.class).all()).withSelfRel());
+    }
+    @GetMapping("/producto/{id}")
+    Resource<producto> one(@PathVariable Long id) {
+
+        producto producto = repository.findById(id)
+                .orElseThrow(() -> new productoNotFoundException(id));
+
+        return assembler.toResource(producto);
     }
 
-    @GetMapping(value = "/{id}")
-    public Foo findById(@PathVariable("id") Long id) {
-        return RestPreconditions.checkFound(service.findById(id));
-    }
     @GetMapping("/producto")
     List<producto> all() {
         return repository.findAll();
     }
 
-    @GetMapping("/producto/{id}")
-    ResponseEntity<EntityModel<producto>> findOne(@PathVariable long id) {
 
-        return repository.findById(id)
-                .map(employee -> new EntityModel<>(employee,
-                        linkTo(methodOn(productocontrolador.class).findOne(employee.getId())).withSelfRel(),
-                        linkTo(methodOn(productocontrolador.class).findAll()).withRel("employees")))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @PostMapping("/producto")
     producto nuevoproducto(@RequestBody producto nuevoproducto) {
@@ -83,12 +88,21 @@ class productocontrolador {
     void deleteproducto(@PathVariable Long id) {
         repository.deleteById(id);
     }
-    public ResponseEntity<Resources<productoresource>> all() {
-        final List<PersonResource> collection =
-                personRepository.findAll().stream().map(PersonResource::new).collect(Collectors.toList());
-        final Resources<PersonResource> resources = new Resources<>(collection);
-        final String uriString = ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
-        resources.add(new Link(uriString, "self"));
-        return ResponseEntity.ok(resources);
+    @RestController
+    class productoController {
+
+        private final productorepositorio repository;
+
+        private final productorwsource assembler;
+
+        productoController(productorepositorio repository,
+                           productorwsource assembler) {
+
+            this.repository = repository;
+            this.assembler = assembler;
+        }
+
+  ...
+
     }
 }

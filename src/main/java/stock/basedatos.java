@@ -15,6 +15,13 @@ class LoadDatabase {
         return args -> {
             log.info("Preloading " + repository.save(new producto("Aflazacort", "Inmunodepresor")));
             log.info("Preloading " + repository.save(new producto("NAproxeno sodico", "Antiinflamatorio")));
+            productorepositorio.save(new Order("MacBook Pro", Status.COMPLETED));
+            productorepositorio.save(new Order("iPhone", Status.IN_PROGRESS));
+
+            productorepositorio.findAll().forEach(order -> {
+                log.info("Preloaded " + order);
+            });
         };
     }
+
 }
